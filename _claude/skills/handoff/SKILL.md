@@ -15,12 +15,12 @@ Based on Matt Pocock's `handoff` skill (github.com/mattpocock/skills, MIT), rebu
 | **LEDGER.md** | one line per decision, written the moment it happens | Claude, during the chat (the `ledger_nudge` hook reminds) | only if the chat skipped it; the checker catches that |
 | **Note** | goal, state, next steps, traps, pointers | Claude, at pack time | yes, but it only points; the layers above hold the detail |
 
-Tools: `_workflow/tiffin/` (`user_said.py`, `ledger_check.py`, `LEDGER-TEMPLATE.md`). Checker: agent `check-tiffin` (`_claude/agents/check-tiffin.md`). Ledger: `<project>/docs/LEDGER.md`; for workspace-wide work, `_workflow/LEDGER.md`.
+Tools: `_workflow/tiffin/` (`user_said.py`, `ledger_check.py`, `ledger_brief.py`, `LEDGER-TEMPLATE.md`). Checker: agent `check-tiffin` (`_claude/agents/check-tiffin.md`). Ledger: `<project>/docs/LEDGER.md`; for workspace-wide work, `_workflow/LEDGER.md`.
 
 ## A. Packing (old chat)
 
 1. **Dump the words:** `python _workflow/tiffin/user_said.py --current` → `_claude/handoffs/said/<date>_<sid>.md` (user) and `<date>_<sid>.claude.md` (Claude's replies). Add the file to the ledger's **Chats** list. Done when the script prints the path and the ledger lists every chat of the project so far.
-2. **Close the ledger:** open the ledger (create it from the template if missing). Walk the said file from the end; every approve / reject / correction / number / preference / named file / open question that is not yet a ledger line gets one now, in the user's words in quotes. Then walk YOUR replies (the `.claude.md` file): every choice you made between options gets a CLAUDE-RULE line with BECAUSE and the dropped options. `ledger_check.py <said> <ledger> [<note>]` lists candidate gaps mechanically. Done when the ledger has no gap you can see on either side.
+2. **Close the ledger:** open the ledger (create it from the template if missing). Walk the said file from the end; every approve / reject / correction / number / preference / named file / open question that is not yet a ledger line gets one now, in the user's words in quotes. Then walk YOUR replies (the `.claude.md` file): every choice you made between options gets a CLAUDE-RULE line with BECAUSE and the dropped options. `ledger_check.py <said> <ledger> [<note>]` lists candidate gaps mechanically. Done when the ledger has no gap you can see on either side. Then mark every older PENDING / OPEN line that this chat finished: change only its status field (after the last `|`) to `DONE (closed chat N: <why>)`; never edit the rest of the line. Unsure = leave it open.
 3. **Write the note** `_claude/handoffs/<yyyy-mm-dd-HHMM>_<slug>.md`, under ~80 lines, sections:
    1. **Goal** - the user's words, and what "done" looks like.
    2. **Where it stands** - verified / built but **(not verified)** / not started. State as fact only what you checked.
@@ -37,7 +37,7 @@ Done when the said file, a PASS from check-tiffin, the logged note and the paste
 
 ## B. Unpacking (new chat)
 
-1. Read the note. Then read the ledger in full (every PENDING line is work), then the said files: the newest in full, older ones at least their last 15 messages; then the newest `.claude.md` (skim the headings, read the blocks around every PENDING item: they hold the dead ends already tried). All are listed in the ledger's Chats section; grep them whenever a detail is in doubt. Load the skills the note names. Done when all three layers are read.
+1. Read the note. Then read the ledger BRIEF, not the whole file: `python _workflow/tiffin/ledger_brief.py <ledger>` (header, last 5 chats of the Chats list, every open line, the last 2 chats in full; the file grows every chat and reading it all would make the new chat heavy). Every open line is work. Before deciding anything about a topic, grep the full ledger for it (the brief prints the grep line), then the said files: the newest in full, older ones at least their last 15 messages; then the newest `.claude.md` (skim the headings, read the blocks around every PENDING item: they hold the dead ends already tried). All are listed in the ledger's Chats section; grep them whenever a detail is in doubt. Load the skills the note names. Done when all three layers are read.
 2. Spawn `check-tiffin` mode **unpack**. Fix nothing yet; take its 10-line state and findings. Done when you have them.
 3. Say the state back to the user in one line (what is done, what is not verified, next step 1). Re-check anything "(not verified)" before building on it. Then start next step 1. Open the old chat's fair copy (`_claude/chats/`) only for something all three layers lack, and read only that part: fair copies cut Claude's text to 700 characters, so for Claude's full findings read the files it wrote, or the session `.jsonl`.
 

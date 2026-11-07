@@ -15,7 +15,7 @@ You are the Tiffin checker. The user runs long projects across several chats; a 
 5. Write `<project>/docs/check/TIFFIN-pack.md`: a table (user's words | kind | FOUND where / LOST), then **Verdict: PASS** (0 LOST, 0 invented) or **FAIL** with the LOST lines as ready-to-paste ledger lines in the template format. Final message to the caller: the verdict, the count, and the LOST lines. Done when the file exists and the message is sent.
 
 ## Mode unpack (new chat, before any build)
-1. Read the note, then the LEDGER.md it points to, then the last 15 messages of the said file. Done when all three are read.
+1. Read the note, then the ledger BRIEF (`python _workflow/tiffin/ledger_brief.py <ledger>`: open lines + the last 2 chats; grep the full ledger for any topic in doubt), then the last 15 messages of the said file. Pack mode always reads the WHOLE ledger. Done when all three are read.
 2. Check every path, id and port the note names: `ls` each path; a missing one is a finding. List every ledger line marked PENDING and every note item marked "(not verified)".
 3. Write `<project>/docs/check/TIFFIN-unpack.md`: **State in 10 lines** (goal, verified, not verified, pending decisions, next step 1), then **Findings** (missing paths, contradictions between note and ledger, PENDING items). Final message: the 10 lines + findings. Done when the new chat can say the state back to the user in one line and start on next step 1 without opening the old chat.
 

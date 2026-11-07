@@ -42,7 +42,7 @@ The **Tiffin box** is the handoff between chats, named after the Indian stacked 
   <img src="docs/readme/s02-tiffin-light.svg" alt="A tiffin carrier stacks four tiers: your words, Claude's words, the LEDGER and a short note, then a check-tiffin PASS stamp" width="100%">
 </picture>
 
-Across many chats, nothing is re-summarised: the LEDGER and your words only grow, and every new chat reads them first.
+Across many chats, nothing is re-summarised: the LEDGER and your words only grow. A new chat reads a short brief of them (open items + the last two chats) and searches the rest by topic, so it starts light even after fifty chats.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/s02-compare-dark.svg">
