@@ -1,0 +1,14 @@
+# machine-local
+__pycache__/
+*.pyc
+.venv/
+.venv-gw/
+.DS_Store
+Thumbs.db
+desktop.ini
+_workflow/PENDING-NOTES.md
+_workflow/.gw-state.json
+# secrets never go to git
+secrets.vault
+*.key
+.env

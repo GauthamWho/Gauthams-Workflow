@@ -1,0 +1,5 @@
+#!/bin/sh
+# Workflow guard: blocks secrets, files > 20 MB, media/weights and nested repos. See precommit_guard.py.
+PY=python
+"$PY" -c "import sys; assert sys.version_info >= (3, 8)" 2>/dev/null || PY=python3
+exec "$PY" "$(dirname "$0")/precommit_guard.py"

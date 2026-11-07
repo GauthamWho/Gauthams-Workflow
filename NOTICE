@@ -1,0 +1,10 @@
+Workflow for Claude Code
+Copyright 2026 Gautham (github.com/GauthamWho, instagram.com/gauthamwho)
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository also contains third-party skills under their own licences (see THIRD-PARTY.md):
+- Matt Pocock's skills (github.com/mattpocock/skills), MIT License
+- obra/superpowers skills (github.com/obra/superpowers), MIT License
+- find-skills (github.com/vercel-labs/skills), MIT License
+- impeccable, Apache License 2.0

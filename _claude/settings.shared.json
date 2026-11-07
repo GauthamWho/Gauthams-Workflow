@@ -1,0 +1,133 @@
+{
+  "_replace_hooks_containing": [
+    "eta_reminder.py",
+    "gw.py",
+    "impeccable",
+    "sync.py",
+    "context_meter.py",
+    "ledger_nudge.py",
+    "said_dump.py"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/gw.py\" start",
+            "timeout": 60,
+            "statusMessage": "Syncing your workflow"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"{{HOME}}/.claude/skills/impeccable/scripts/impeccable\" ] || \"{{HOME}}/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 5,
+            "statusMessage": "Preparing build session"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"{{HOME}}/.claude/skills/impeccable/scripts/impeccable\" ] || \"{{HOME}}/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"{{HOME}}/.claude/skills/impeccable/scripts/impeccable\" ] || \"{{HOME}}/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 30,
+            "statusMessage": "Design deep pass"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/gw.py\" checkpoint",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/hooks/said_dump.py\"",
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/gw.py\" end",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Agent|Task|Workflow|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/hooks/eta_reminder.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/hooks/context_meter.py\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/hooks/ledger_nudge.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PY}} \"{{GW}}/_workflow/hooks/said_dump.py\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "theme": "dark"
+}
