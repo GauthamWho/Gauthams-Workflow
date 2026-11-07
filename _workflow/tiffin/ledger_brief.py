@@ -21,7 +21,10 @@ OPEN = re.compile(r"\|\s*(PENDING|OPEN|BLOCKED)\b|\bin progress\b|not verified|N
 TAG = re.compile(r"^- \[(\d{4}-\d{2}-\d{2})(?: (?:\d{2}:\d{2}|chat (\d+)))?[^\]]*\]")
 
 
-def brief(path: Path, n_chats: int = 2) -> str:
+RULE = re.compile(r"^- (?:~~)?\[[^\]]*\] (PREF|REJECTED|CORRECTED|DECISION|APPROVED|PICK|VERDICT)(?![A-Z])")
+
+
+def brief(path: Path, n_chats: int = 2, rules: bool = False) -> str:
     lines = path.read_text(encoding="utf-8").splitlines()
     first = next((i for i, l in enumerate(lines) if TAG.match(l)), len(lines))
     head = lines[:first]
@@ -45,7 +48,7 @@ def brief(path: Path, n_chats: int = 2) -> str:
             return False
         return (m.group(2) and int(m.group(2)) in recent_chats) or (m.group(1) in recent_dates)
 
-    open_l, recent_l, skipped, section = [], [], 0, ""
+    open_l, recent_l, rule_l, skipped, section = [], [], [], 0, ""
     for l, m in zip(body, tags):
         if l.startswith("## "):
             section = l
@@ -59,11 +62,13 @@ def brief(path: Path, n_chats: int = 2) -> str:
             recent_l.append(l)
         elif OPEN.search(l) and not closed:
             open_l.append(l)
+        elif rules and RULE.match(l):
+            rule_l.append(l)
         else:
             skipped += 1
     which = f"chats {', '.join(map(str, sorted(recent_chats)))}" if recent_chats else f"dates {', '.join(sorted(recent_dates))}"
     out = head + [f"## OPEN from older chats ({len(open_l)}): do these first"] + (open_l or ["- none"]) + \
-        ["", f"## Last {which} in full ({len(recent_l)} lines)"] + recent_l + \
+        ([ "", f"## Old rules, rejections and corrections ({len(rule_l)}): never undo these without asking"] + rule_l if rules else []) +         ["", f"## Last {which} in full ({len(recent_l)} lines)"] + recent_l + \
         ["", f"## Not shown: {skipped} closed lines from older chats. Search them by topic before deciding anything "
              f"about it:", f'`grep -n -i "<topic word>" "{path.as_posix()}"`']
     return "\n".join(out) + "\n"
@@ -74,5 +79,6 @@ if __name__ == "__main__":
     if not a:
         raise SystemExit(__doc__)
     n = int(a[a.index("--chats") + 1]) if "--chats" in a else 2
+    rules = "--rules" in a
     sys.stdout.reconfigure(encoding="utf-8")
-    print(brief(Path(a[0]), n), end="")
+    print(brief(Path(a[0]), n, rules), end="")
