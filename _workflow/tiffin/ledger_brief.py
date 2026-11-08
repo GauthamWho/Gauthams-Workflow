@@ -1,33 +1,50 @@
-r"""ledger_brief.py - the short read of a LEDGER.md for a new chat (so a long ledger never makes the new chat heavy).
+r"""ledger_brief.py - what a NEW chat reads from a project's LEDGER.md, by the project's memory mode.
 
 Usage:
-  python ledger_brief.py <LEDGER.md> [--chats N]     (default: the last 2 chats in full)
+  python ledger_brief.py <LEDGER.md>                    follows the ledger's own "Memory mode:" line (default: full)
+  python ledger_brief.py <LEDGER.md> --mode full|rules|lookup [--chats N]
 
-Why: a new chat used to read the whole ledger. It grows with every chat (85 KB after 14 chats), so after ~50 chats
-the new chat would start almost as heavy as the old one (user 2026-11-08: "make this update").
-The ledger file itself is never changed or cut: it stays the one complete record, and check-tiffin PACK still reads
-all of it. This script only prints what a new chat must act on:
-  1. the header (everything before the first decision line),
-  2. the last 5 entries of the Chats list (said-file paths) + how many older ones exist,
-  3. every OPEN item: status PENDING / OPEN / BLOCKED / "in progress", or "not verified" / "NOT checked" anywhere,
-  4. every line of the last N chats (by the "[date chat N]" tag; ledgers without chat tags: the last N dates),
-  5. a footer: how many lines were left out and the grep line to search them by topic.
-Struck-through lines (~~...~~) count as closed.
+Memory modes (the user picks one when the project starts; it is written in the ledger header as
+`Memory mode: full` / `rules` / `lookup`; user 2026-11-08: "we will have only the student 1 / we can also have
+student 4, and Student 3 / based on teh users need"):
+  full    "Whole notebook" (DEFAULT). Prints the whole ledger. Safest: nothing to remember to look up.
+  rules   "Short notes + your rules". Open items + the last N chats + every old PREF / REJECTED / CORRECTED /
+          DECISION / APPROVED / PICK / VERDICT line, + a look-up line for the rest.
+  lookup  "Short notes + look-up". Open items + the last N chats only, + a look-up line. Lightest; the chat must
+          search the full ledger before deciding anything about an older topic.
+Recall test 2026-11-08 (12 questions, fresh chats, twice each; _workflow/docs/check/RECALL-TEST-2026-11-08.md):
+  full 12/12 | rules 10/12 without searching | lookup 3/12 without searching, 12/12 when it searched.
+
+The ledger file is never changed or cut; check-tiffin PACK always reads all of it. "Open" = status PENDING / OPEN /
+BLOCKED / "in progress", or "not verified" / "NOT checked"; a status starting DONE, or a ~~struck~~ line, is closed.
 """
 import re, sys
 from pathlib import Path
 
 OPEN = re.compile(r"\|\s*(PENDING|OPEN|BLOCKED)\b|\bin progress\b|not verified|NOT checked|NOT verified", re.I)
 TAG = re.compile(r"^- \[(\d{4}-\d{2}-\d{2})(?: (?:\d{2}:\d{2}|chat (\d+)))?[^\]]*\]")
-
-
 RULE = re.compile(r"^- (?:~~)?\[[^\]]*\] (PREF|REJECTED|CORRECTED|DECISION|APPROVED|PICK|VERDICT)(?![A-Z])")
+MODE = re.compile(r"(?im)^\W*Memory mode\W*:?\W*(full|rules|lookup)\b")
+MODES = ("full", "rules", "lookup")
 
 
-def brief(path: Path, n_chats: int = 2, rules: bool = False) -> str:
-    lines = path.read_text(encoding="utf-8").splitlines()
+def ledger_mode(text: str) -> str:
+    m = MODE.search(text[:4000])
+    return m.group(1).lower() if m else "full"
+
+
+def brief(path: Path, n_chats: int = 2, mode: str = "") -> str:
+    text = path.read_text(encoding="utf-8")
+    mode = mode or ledger_mode(text)
+    if mode == "full":
+        return f"<!-- memory mode: full (whole notebook) -->\n{text}" if not text.endswith("\n") else \
+            f"<!-- memory mode: full (whole notebook) -->\n{text}"
+    rules = mode == "rules"
+    lines = text.splitlines()
     first = next((i for i, l in enumerate(lines) if TAG.match(l)), len(lines))
     head = lines[:first]
+    while head and head[-1].startswith("## ") or (head and not head[-1].strip()):
+        head = head[:-1]                                       # drop an empty trailing section heading
     chats_at = next((i for i, l in enumerate(head) if l.startswith("## Chats")), None)
     if chats_at is not None:                                   # shorten the Chats list, keep its newest 5 entries
         end = next((i for i in range(chats_at + 1, len(head)) if head[i].startswith("## ")), len(head))
@@ -67,18 +84,24 @@ def brief(path: Path, n_chats: int = 2, rules: bool = False) -> str:
         else:
             skipped += 1
     which = f"chats {', '.join(map(str, sorted(recent_chats)))}" if recent_chats else f"dates {', '.join(sorted(recent_dates))}"
-    out = head + [f"## OPEN from older chats ({len(open_l)}): do these first"] + (open_l or ["- none"]) + \
-        ([ "", f"## Old rules, rejections and corrections ({len(rule_l)}): never undo these without asking"] + rule_l if rules else []) +         ["", f"## Last {which} in full ({len(recent_l)} lines)"] + recent_l + \
-        ["", f"## Not shown: {skipped} closed lines from older chats. Search them by topic before deciding anything "
-             f"about it:", f'`grep -n -i "<topic word>" "{path.as_posix()}"`']
+    label = "short notes + your rules" if rules else "short notes + look-up"
+    out = [f"<!-- memory mode: {mode} ({label}) -->"] + head + \
+        ["", f"## OPEN from older chats ({len(open_l)}): do these first"] + (open_l or ["- none"])
+    if rules:
+        out += ["", f"## Old rules, rejections and corrections ({len(rule_l)}): never undo these without asking"] + rule_l
+    out += ["", f"## Last {which} in full ({len(recent_l)} lines)"] + recent_l
+    out += ["", f"## Not shown: {skipped} older lines. Before deciding ANYTHING about an older topic, look it up:",
+            f'`grep -n -i "<topic word>" "{path.as_posix()}"`']
     return "\n".join(out) + "\n"
 
 
 if __name__ == "__main__":
     a = sys.argv[1:]
-    if not a:
+    if not a or a[0].startswith("-"):
         raise SystemExit(__doc__)
     n = int(a[a.index("--chats") + 1]) if "--chats" in a else 2
-    rules = "--rules" in a
+    mode = a[a.index("--mode") + 1] if "--mode" in a else ""
+    if mode and mode not in MODES:
+        raise SystemExit(f"--mode must be one of {MODES}")
     sys.stdout.reconfigure(encoding="utf-8")
-    print(brief(Path(a[0]), n, rules), end="")
+    print(brief(Path(a[0]), n, mode), end="")

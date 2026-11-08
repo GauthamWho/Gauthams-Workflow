@@ -42,12 +42,29 @@ The **Tiffin box** is the handoff between chats, named after the Indian stacked 
   <img src="docs/readme/s02-tiffin-light.svg" alt="A tiffin carrier stacks four tiers: your words, Claude's words, the LEDGER and a short note, then a check-tiffin PASS stamp" width="100%">
 </picture>
 
-Across many chats, nothing is re-summarised: the LEDGER and your words only grow. A new chat reads a short brief of them (open items + the last two chats) and searches the rest by topic, so it starts light even after fifty chats.
+Across many chats, nothing is re-summarised: the LEDGER and your words only grow. How much of them a new chat reads is your choice (see below).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/s02-compare-dark.svg">
   <img src="docs/readme/s02-compare-light.svg" alt="Comparison: plain Claude, plus downloaded skills, and Gautham's Workflow across five abilities" width="100%">
 </picture>
+
+### How much should a new chat read? You choose, per project
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/s11-memory-dark.svg">
+  <img src="docs/readme/s11-memory-light.svg" alt="Three notebooks: the whole notebook (12 of 12 remembered, heaviest), short notes plus your rules (10 of 12, middle), short notes plus look-up (12 of 12 when it looks things up, lightest)" width="100%">
+</picture>
+
+Think of a school notebook you write in every day. When a project starts, Claude asks which way a new chat should read it:
+
+| Option | What a new chat reads | Example | Weight |
+|---|---|---|---|
+| **1. Whole notebook** (default) | every page | After 50 chats it still knows "no fingers on the hands" from chat 4. | heaviest, grows every chat |
+| **2. Short notes + your rules** | open to-dos, the last 2 chats, every "never do this / do it this way" rule | Your rules are always in front of it; small old facts it looks up. | about half |
+| **3. Short notes + look-up** | open to-dos and the last 2 chats; it searches the rest | Lightest, but it must think to look things up. | lightest |
+
+**Tested, not guessed:** fresh chats got 12 questions about old decisions, twice each. Whole notebook: **12/12**. Short notes + rules: **10/12** (the 2 misses were small technical facts). Short notes + look-up: **12/12** when it looked things up, **3/12** when it did not. Nothing is ever deleted in any option; the full notebook always stays on disk, and the Tiffin checker always reads all of it. Change your pick any time: it is one line (`Memory mode:`) at the top of the project's ledger.
 
 ## 3. One task = one chat
 

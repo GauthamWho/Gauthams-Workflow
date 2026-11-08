@@ -23,6 +23,7 @@ Anything a second project needs moves to `Common/` (one copy) and is imported fr
 ## Starting work: Matt Pocock's flow (every project, sub-project, app or feature)
 Matt Pocock's skills (github.com/mattpocock/skills) are part of every plan. Many start only from a slash command; when a step below is reached, open `~/.claude/skills/<name>/SKILL.md` and follow it directly. His `/code-review` is installed as `mp-code-review`; his `/handoff` is our **Tiffin box**.
 1. **Grill first.** Before any plan or build, interview {{NAME}} with `grilling` (in a project folder: `grill-with-docs`, which keeps `GLOSSARY.md` + decisions in `docs/`). Plain words, one question at a time; design questions stay visual (pickers). Done when every open question is settled.
+   **First question of every new project: the Memory mode** (how much a new chat reads from the project notes): Whole notebook (default) / Short notes + rules / Short notes + look-up. Ask {{NAME}} with the question in `_workflow/tiffin/LEDGER-TEMPLATE.md` and write the answer in the project LEDGER header; the Tiffin box follows it (skill `handoff`).
 2. **Big and foggy** (new app, new pipeline) → `wayfinder`, then `to-spec`.
 3. **More than one chat of work** → `to-spec` → `to-tickets`, then `implement` one ticket per fresh chat. Creative pieces that need one continuous run of taste (one film, one design) stay in one chat: grill → the piece's own steps → retro.
 4. **Needs a runnable answer** (a look, a mechanic) → `prototype`; findings go into a file in `docs/`, the LEDGER points to it.
