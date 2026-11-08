@@ -17,7 +17,7 @@ Based on Matt Pocock's `handoff` skill (github.com/mattpocock/skills, MIT), rebu
 
 Tools: `_workflow/tiffin/` (`user_said.py`, `ledger_check.py`, `ledger_brief.py`, `LEDGER-TEMPLATE.md`). Checker: agent `check-tiffin` (`_claude/agents/check-tiffin.md`). Ledger: `<project>/docs/LEDGER.md`; for workspace-wide work, `_workflow/LEDGER.md`.
 
-**Memory mode (chosen once, when the project starts):** how much a new chat reads from the ledger. When you create a project's ledger, ask the user the memory-mode question in `_workflow/tiffin/LEDGER-TEMPLATE.md` (three options with the school-notebook example), write the answer as the `Memory mode:` line in the ledger header, and the Tiffin box follows it from then on (no answer = `full`). Proof behind the options: `_workflow/docs/check/RECALL-TEST-2026-11-08.md` (full 12/12, rules 10/12 without searching, lookup 3/12 alone, 12/12 when it searched). The user can switch later by editing that one line.
+**Memory mode (chosen once, when the project starts):** how much a new chat reads from the ledger. When you create a project's ledger, ask the user the memory-mode question in `_workflow/tiffin/LEDGER-TEMPLATE.md` (three options with the school-notebook example) and ALWAYS give the picture link with it (`docs/readme/s11-memory-light.svg`, also in this repo on GitHub), because the options are hard to picture from words alone, write the answer as the `Memory mode:` line in the ledger header, and the Tiffin box follows it from then on (no answer = `full`). Proof behind the options: `_workflow/docs/check/RECALL-TEST-2026-11-08.md` (full 12/12, rules 10/12 without searching, lookup 3/12 alone, 12/12 when it searched). The user can switch later by editing that one line.
 
 ## A. Packing (old chat)
 

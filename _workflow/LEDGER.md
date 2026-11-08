@@ -6,6 +6,8 @@ Memory mode: full
 when the project starts, with this question; no answer = full. The user can change the line any time.)
 
 > **How much should a new chat read from this project's notes?** Think of a school notebook you write in every day.
+> **See the picture first:** [docs/readme/s11-memory-light.svg](docs/readme/s11-memory-light.svg) (also in this repo on GitHub).
+> It shows the three notebooks side by side, how much each one remembered in our test, and how heavy each one is.
 > 1. **Whole notebook** (recommended, the default): the new chat reads every page. It never forgets a decision.
 >    It gets heavier as the notebook grows. Example: after 50 chats it still remembers "no fingers on the hands" from chat 4.
 > 2. **Short notes + your rules**: it reads the open to-dos, the last 2 chats and every "never do this / do it this way" rule.
