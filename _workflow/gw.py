@@ -576,6 +576,40 @@ def install_agent_skills():
     print(f"gw: installer skills: {done} installed, {len(lock)} in the list")
 
 
+def rewritten_repos():
+    """Nested repos whose GitHub history was rewritten on purpose ({path: date, why}); _workflow/rewritten-repos.json.
+    Use: list a repo here only when its history was rewritten on purpose, so another machine's copy cannot
+    fast-forward any more (none listed today; added 2026-11-13)."""
+    p = WF / "rewritten-repos.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+
+
+def reclone_rewritten(dst, url):
+    """Replace a stale copy of a rewritten repo with a fresh clone. Never loses work: if the copy has uncommitted
+    changes or commits that never reached GitHub, it is only set aside (renamed) and the user is told."""
+    run = lambda *a: subprocess.run(["git", "-C", str(dst), *a], capture_output=True, text=True)
+    dirty = run("status", "--porcelain").stdout.strip()
+    # compare with the copy's OWN last-known GitHub state (before any fetch): commits beyond it never reached GitHub
+    has_u = run("rev-parse", "@{u}").returncode == 0
+    unpushed = run("log", "--oneline", "@{u}..HEAD").stdout.strip() if has_u else run("log", "--oneline", "-1").stdout.strip()
+    aside = dst.with_name(dst.name + ".before-rewrite")
+    if aside.exists():
+        print("gw: STOP:", aside, "already exists; remove it by hand, then run again")
+        return
+    dst.rename(aside)
+    if subprocess.run(["git", "clone", "-q", url, str(dst)]).returncode != 0:
+        aside.rename(dst)
+        print("gw: re-clone failed; old copy put back:", dst)
+        return
+    if dirty or unpushed:
+        print("gw: fresh copy of", dst.name, "made; your old copy had local work and was KEPT at", aside)
+    else:
+        def _force(fn, path, _exc):   # git marks object files read-only (Windows): make writable, then delete
+            os.chmod(path, 0o700); fn(path)
+        shutil.rmtree(aside, onerror=_force)
+        print("gw: fresh copy of", dst.name, "made (its GitHub history was cleaned on purpose; the old copy had no local work)")
+
+
 def clone_nested():
     for r in json.loads((WF / "nested-repos.json").read_text(encoding="utf-8")):
         if not r["url"]:
@@ -584,6 +618,8 @@ def clone_nested():
         dst = (ROOT if r["where"] == "workspace" else CL / "skills") / r["path"]
         if (dst / ".git").exists():
             git_r = subprocess.run(["git", "-C", str(dst), "pull", "-q", "--ff-only"], capture_output=True)
+            if git_r.returncode != 0 and r["path"] in rewritten_repos():
+                reclone_rewritten(dst, r["url"])
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         print("gw: clone", r["url"])
